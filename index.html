@@ -4,26 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>~/startpage</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #1b1b24;        
             --fg: #d2d7f3;        
             --accent: #e67e22;    
             --lavender: #b69cdb;  
-            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --dark-gray: #4a4a58;
+            --divider: rgba(182, 156, 219, 0.15);
+            --font-main: 'JetBrains Mono', monospace;
         }
 
         body {
             background-color: var(--bg);
             color: var(--fg);
-            font-family: var(--font-mono);
+            font-family: var(--font-main);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            box-sizing: border-box;
         }
 
         .container {
@@ -32,83 +34,102 @@
             align-items: center;
         }
 
+        /* IMAGE SECTION */
+        .image-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
         .image-container img {
             width: 280px;
             aspect-ratio: 9 / 16; 
             object-fit: cover;
             border-radius: 8px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            filter: contrast(1.1) brightness(1.1); 
+            transition: opacity 0.5s ease-in-out;
+            filter: contrast(1.1) brightness(1.1);
         }
 
-        .content {
+        /* ARROW TRIGGER */
+        #gallery-trigger {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            width: 100%;
             display: flex;
-            flex-direction: column;
+            justify-content: flex-end;
+            padding-right: 5px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+            margin-top: -10px;
         }
 
-        h1 {
-            color: var(--accent); 
-            font-size: 2.5rem;
-            margin-bottom: 5px;
-            letter-spacing: -1px;
+        #gallery-trigger:hover { opacity: 1; }
+        #gallery-trigger svg { fill: var(--dark-gray); width: 20px; transition: transform 0.3s; }
+        #gallery-trigger.open svg { transform: rotate(180deg); fill: var(--accent); }
+
+        /* DROPDOWN MENU */
+        .gallery-menu {
+            position: absolute;
+            top: 100%;
+            right: 5px;
+            width: 220px;
+            background: transparent;
+            max-height: 0;
+            overflow-y: auto;
+            transition: max-height 0.3s ease-out;
+            z-index: 10;
         }
 
-        .clock {
-            color: var(--lavender); 
-            font-size: 1.2rem;
-            margin-bottom: 40px;
-        }
-
-        .links-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
-        }
-
-        .category h3 {
-            color: var(--lavender);
-            margin: 0 0 10px 0;
-            font-size: 1.1rem;
+        .gallery-menu.open { max-height: 450px; }
+        .gallery-menu ul { list-style: none; padding: 0; margin: 10px 0 0 0; text-align: right; }
+        .gallery-menu li {
+            font-size: 0.85rem;
+            color: var(--fg);
+            padding: 6px 0;
+            cursor: pointer;
+            transition: color 0.2s;
+            border-bottom: 1px solid var(--divider);
             text-transform: lowercase;
         }
 
-        .category ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+        .gallery-menu li:hover { color: var(--accent); }
+        .gallery-menu .slideshow-toggle.active { color: var(--accent); font-weight: bold; }
 
-        .category li {
-            margin-bottom: 5px;
-        }
-
-        .category a {
-            color: var(--fg);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .category a:hover {
+        /* CONTENT AREA */
+        .content { display: flex; flex-direction: column; }
+        
+        h1 { 
             color: var(--accent); 
+            font-size: 2.5rem; 
+            margin-bottom: 5px; 
+            letter-spacing: 1px; /* Spaced out like your 1st photo */
+            font-weight: 400; 
+        }
+        
+        .clock { 
+            color: var(--lavender); 
+            font-size: 1.1rem; 
+            margin-bottom: 40px; 
+            letter-spacing: 0px;
         }
 
-        /* MOBILE LAYOUT */
+        .links-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; }
+        .category h3 { color: var(--lavender); margin: 0 0 10px 0; text-transform: lowercase; font-weight: 400; letter-spacing: 1px; }
+        .category ul { list-style: none; padding: 0; margin: 0; }
+        .category li { margin-bottom: 5px; }
+        .category a { color: var(--fg); text-decoration: none; transition: 0.2s; }
+        .category a:hover { color: var(--accent); padding-left: 5px; }
+
         @media (max-width: 800px) {
-            .container {
-                flex-direction: column;
-                gap: 30px;
-                text-align: center;
-            }
-            .image-container img {
-                width: 220px;
-            }
-            .links-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            h1 {
-                font-size: 1.8rem;
-            }
+            .container { flex-direction: column; text-align: center; }
+            .image-container img { width: 220px; }
+            .links-grid { grid-template-columns: 1fr; }
+            .gallery-menu { right: 50%; transform: translateX(50%); }
+            .gallery-menu ul { text-align: center; }
         }
     </style>
 </head>
@@ -116,7 +137,25 @@
 
     <div class="container">
         <div class="image-container">
-            <img src="./birddd.png" alt="Pijus Bird Startpage">
+            <img id="slideshow" src="./birddd.png" alt="Artwork">
+            
+            <button id="gallery-trigger">
+                <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+
+            <div id="gallery-menu" class="gallery-menu">
+                <ul>
+                    <li onclick="setSpecificImage(0)">bird</li>
+                    <li onclick="setSpecificImage(1)">csm</li>
+                    <li onclick="setSpecificImage(2)">arima</li>
+                    <li onclick="setSpecificImage(3)">sandevistan</li>
+                    <li onclick="setSpecificImage(4)">bluebond</li>
+                    <li onclick="setSpecificImage(5)">musashi</li>
+                    <li onclick="setSpecificImage(6)">vagabond</li>
+                    <li onclick="setSpecificImage(7)">vinland</li>
+                    <li id="slideshow-label" class="slideshow-toggle" onclick="toggleSlideshow()">auto cycle (off)</li>
+                </ul>
+            </div>
         </div>
 
         <div class="content">
@@ -132,7 +171,6 @@
                         <li><a href="https://pinterest.com">Pinterest</a></li>
                     </ul>
                 </div>
-                
                 <div class="category">
                     <h3>~/school</h3>
                     <ul>
@@ -140,7 +178,6 @@
                         <li><a href="https://office.com">office365</a></li>
                     </ul>
                 </div>
-                
                 <div class="category">
                     <h3>~/util</h3>
                     <ul>
@@ -157,14 +194,65 @@
         function updateClock() {
             const now = new Date();
             const time = now.toLocaleTimeString([], { hour12: false });
-            const day = now.getDate();
-            const month = now.getMonth() + 1;
-            const year = now.getFullYear();
-            const date = `${day}/${month}/${year}`;
+            const date = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
             document.getElementById('clock').innerHTML = `${time} | ${date}`;
         }
         setInterval(updateClock, 1000);
         updateClock();
+
+        const images = [
+            "./birddd.png", "./csm.png", "./arima.png", "./sandevistan.png", 
+            "./bluebond.png", "./musashi.png", "./vagabond.png", "./vinland.png"
+        ];
+        
+        let currentIndex = 0;
+        let slideInterval;
+        let isAuto = false; 
+        
+        const slideImg = document.getElementById("slideshow");
+        const trigger = document.getElementById("gallery-trigger");
+        const menu = document.getElementById("gallery-menu");
+        const sLabel = document.getElementById("slideshow-label");
+
+        trigger.addEventListener("click", () => {
+            menu.classList.toggle('open');
+            trigger.classList.toggle('open');
+        });
+
+        function setSpecificImage(index) {
+            slideImg.style.opacity = 0;
+            setTimeout(() => {
+                currentIndex = index;
+                slideImg.src = images[currentIndex];
+                slideImg.style.opacity = 1;
+                menu.classList.remove('open');
+                trigger.classList.remove('open');
+            }, 500);
+        }
+
+        function nextImage() {
+            slideImg.style.opacity = 0;
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % images.length;
+                slideImg.src = images[currentIndex];
+                slideImg.style.opacity = 1;
+            }, 500);
+        }
+
+        function toggleSlideshow() {
+            isAuto = !isAuto;
+            if (isAuto) {
+                sLabel.innerHTML = "auto cycle (on)";
+                sLabel.classList.add('active');
+                slideInterval = setInterval(nextImage, 30000);
+            } else {
+                sLabel.innerHTML = "auto cycle (off)";
+                sLabel.classList.remove('active');
+                clearInterval(slideInterval);
+            }
+            menu.classList.remove('open');
+            trigger.classList.remove('open');
+        }
     </script>
 </body>
 </html>

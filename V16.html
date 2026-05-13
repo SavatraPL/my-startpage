@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>~/startpage</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1b1b24; --fg: #d2d7f3; --accent: #e67e22; --lavender: #b69cdb; 
+            --dark-gray: #4a4a58; --divider: rgba(182, 156, 219, 0.15);
+            --glass-bg: rgba(27, 27, 36, 0.7);
+        }
+        [data-theme="mocha"] { --bg: #1e1e2e; --fg: #cdd6f4; --accent: #fab387; --lavender: #cba6f7; --dark-gray: #585b70; --glass-bg: rgba(30, 30, 46, 0.7); }
+        [data-theme="blackwing"] { --bg: #0d0d0f; --fg: #e0e0e0; --accent: #9b111e; --lavender: #636e72; --dark-gray: #2d3436; --glass-bg: rgba(13, 13, 15, 0.85); }
+        [data-theme="paper"] { --bg: #fcfcfc; --fg: #444444; --accent: #2980b9; --lavender: #7f8c8d; --dark-gray: #bdc3c7; --glass-bg: rgba(252, 252, 252, 0.8); }
+        [data-theme="rose"] { --bg: #191724; --fg: #e0def4; --accent: #ebbcba; --lavender: #c4a7e7; --dark-gray: #6e6a86; --glass-bg: rgba(25, 23, 36, 0.8); }
+        [data-theme="matcha"] { --bg: #2b2b2b; --fg: #f5f5f5; --accent: #bad797; --lavender: #670626; --dark-gray: #4a4a4a; --glass-bg: rgba(43, 43, 43, 0.7); }
+        [data-theme="midnight"] { --bg: #0f0f17; --fg: #a9b1d6; --accent: #7aa2f7; --lavender: #bb9af7; --dark-gray: #414868; --glass-bg: rgba(15, 15, 23, 0.8); }
+        [data-theme="tokyo"] { --bg: #1a1b26; --fg: #cfc9c2; --accent: #ff007c; --lavender: #e0af68; --dark-gray: #565f89; --glass-bg: rgba(26, 27, 38, 0.7); }
+
+        body {
+            background-color: var(--bg); color: var(--fg); font-family: 'JetBrains Mono', monospace;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; 
+            margin: 0; padding: 40px 20px; box-sizing: border-box;
+            overflow-x: hidden; overflow-y: auto;
+        }
+
+        body::-webkit-scrollbar { display: none; }
+        body { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .container { display: flex; gap: 60px; align-items: flex-start; width: fit-content; max-width: 1100px; justify-content: center; position: relative; }
+
+        .image-container { position: relative; flex-shrink: 0; }
+        .image-container img {
+            width: 280px; aspect-ratio: 9 / 16; object-fit: cover;
+            border-radius: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: opacity 0.4s ease;
+        }
+
+        .controls-row { position: absolute; bottom: -30px; right: 0; display: flex; gap: 10px; opacity: 0.1; transition: opacity 0.3s ease; }
+        .image-container:hover .controls-row { opacity: 0.6; }
+
+        .icon-btn { background: transparent; border: none; cursor: pointer; padding: 5px; outline: none; }
+        .icon-btn svg { fill: var(--dark-gray); width: 18px; transition: fill 0.2s; }
+        .icon-btn:hover svg { fill: var(--accent); }
+
+        .dropdown-menu {
+            position: absolute; bottom: 40px; right: 0; width: 220px;
+            background: var(--glass-bg); backdrop-filter: blur(12px);
+            visibility: hidden; opacity: 0; transform: translateY(10px);
+            transition: all 0.2s ease; pointer-events: none; overflow-y: auto; z-index: 100; 
+            border-radius: 8px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 350px;
+        }
+        .dropdown-menu.open { visibility: visible; opacity: 1; transform: translateY(0); pointer-events: auto; padding: 5px 0; }
+        .dropdown-menu li { font-size: 0.85rem; color: var(--fg); padding: 10px 20px; cursor: pointer; text-align: right; list-style: none; }
+        .dropdown-menu li:hover { color: var(--accent); background: rgba(255,255,255,0.08); }
+        .toggle-item { border-bottom: 1px solid var(--divider); color: var(--lavender) !important; font-weight: bold; }
+
+        .content { display: flex; flex-direction: column; margin-top: 45px; width: 450px; }
+        h1 { color: var(--accent); font-size: 2.5rem; margin: 0; font-weight: 400; letter-spacing: -1px; }
+        .clock { color: var(--lavender); font-size: 1.1rem; margin-top: 8px; margin-bottom: 35px; }
+
+        .search-bar {
+            background: transparent; border: none; border-bottom: 1px solid var(--dark-gray);
+            padding: 8px 0; width: 360px; color: var(--fg); font-family: inherit;
+            font-size: 1.1rem; outline: none; opacity: 0.8; margin-bottom: 40px;
+        }
+        .search-bar:focus { border-bottom: 1px solid var(--accent); opacity: 1; }
+
+        .links-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px 20px; width: 100%; }
+        .category h3 { color: var(--lavender); margin: 0 0 15px 0; font-weight: 400; font-size: 1.25rem; }
+        .category ul { list-style: none; padding: 0; margin: 0; }
+        .category li { margin-bottom: 8px; font-size: 1rem; }
+        .category a { color: var(--fg); text-decoration: none; transition: all 0.2s ease; }
+        .category a:hover { color: var(--accent); padding-left: 6px; }
+
+        .pomodoro-container { display: none; margin-top: 5px; }
+        .timer-display { font-size: 1.5rem; color: var(--fg); margin-bottom: 10px; cursor: text; outline: none; display: inline-block; }
+        .timer-display:focus { color: var(--accent); }
+        .timer-btns { display: flex; gap: 10px; }
+        .timer-btn { background: transparent; border: 1px solid var(--dark-gray); color: var(--dark-gray); font-family: inherit; font-size: 0.7rem; padding: 4px 8px; cursor: pointer; border-radius: 4px; }
+        .timer-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        .quote-container {
+            position: fixed; bottom: 30px; left: 0; right: 0;
+            text-align: center; font-style: italic; color: var(--dark-gray); 
+            font-size: 0.8rem; opacity: 0.6; display: none; pointer-events: none;
+        }
+
+        .notes-window {
+            position: fixed; top: 70px; right: 25px; width: 300px;
+            background: var(--glass-bg); backdrop-filter: blur(12px);
+            border: 1px solid var(--divider); border-radius: 8px;
+            padding: 15px; visibility: hidden; opacity: 0; transform: translateY(-10px);
+            transition: all 0.2s ease; z-index: 999;
+        }
+        .notes-window.open { visibility: visible; opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .notepad { background: transparent; border: none; width: 100%; height: 200px; color: var(--fg); font-family: inherit; font-size: 0.85rem; resize: none; outline: none; }
+
+        @media (max-width: 780px) {
+            body { align-items: flex-start; padding-bottom: 80px; }
+            .container { flex-direction: column; align-items: center; gap: 40px; width: 100%; }
+            .content { margin-top: 0; align-items: center; text-align: center; width: 100%; max-width: 450px; }
+            .search-bar { width: 100%; max-width: 320px; }
+            .links-grid { grid-template-columns: 1fr; gap: 30px; text-align: center; }
+            .timer-btns { justify-content: center; }
+            body::-webkit-scrollbar { display: block; width: 4px; }
+            body::-webkit-scrollbar-thumb { background: var(--dark-gray); border-radius: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div style="position: fixed; top: 25px; right: 25px; z-index: 1000;" id="notes-btn-container">
+        <button class="icon-btn" id="notes-trigger" title="Notes"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></button>
+    </div>
+
+    <div id="notes-window" class="notes-window" onclick="event.stopPropagation()"><textarea id="notepad" class="notepad" placeholder="Write something..."></textarea></div>
+
+    <div class="container">
+        <div class="image-container">
+            <img id="slideshow" src="" alt="">
+            <div class="controls-row">
+                <button class="icon-btn" id="theme-trigger"><svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></button>
+                <button class="icon-btn" id="gallery-trigger"><svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></button>
+                <button class="icon-btn" id="settings-trigger"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
+            </div>
+            
+            <div id="theme-menu" class="dropdown-menu" onclick="event.stopPropagation()"><ul><li onclick="setTheme('default')">original</li><li onclick="setTheme('mocha')">catppuccin</li><li onclick="setTheme('blackwing')">black wing</li><li onclick="setTheme('paper')">paper (light)</li><li onclick="setTheme('rose')">rose pine</li><li onclick="setTheme('matcha')">cherry matcha</li><li onclick="setTheme('midnight')">midnight neon</li><li onclick="setTheme('tokyo')">tokyo night</li></ul></div>
+            <div id="gallery-menu" class="dropdown-menu" onclick="event.stopPropagation()"><ul id="gallery-list"><li class="toggle-item" id="auto-cycle-toggle" onclick="toggleAutoCycle(event)">auto-cycle: on</li></ul></div>
+            <div id="settings-menu" class="dropdown-menu" onclick="event.stopPropagation()"><ul>
+                <li class="toggle-item" id="notes-toggle" onclick="toggleFeature('notes', event)">feature: notes on</li>
+                <li class="toggle-item" id="timer-toggle" onclick="toggleFeature('timer', event)">feature: timer off</li>
+                <li class="toggle-item" id="quote-toggle" onclick="toggleFeature('quote', event)">feature: quote off</li>
+                <li class="toggle-item" id="random-startup-toggle" onclick="toggleRandomStartup(event)">random on startup: on</li>
+            </ul></div>
+        </div>
+
+        <div class="content">
+            <h1 id="greeting">Good afternoon.</h1>
+            <div class="clock" id="clock">00:00:00 | 13/5/2026</div>
+            <form onsubmit="handleSearch(event)"><input type="text" id="search-bar" class="search-bar" placeholder="type to search..." autocomplete="off"></form>
+
+            <div class="links-grid">
+                <div class="category"><h3>~/general</h3><ul><li><a href="https://youtube.com">YouTube</a></li><li><a href="https://reddit.com">Reddit</a></li><li><a href="https://pinterest.com">Pinterest</a></li></ul></div>
+                <div class="category"><h3>~/school</h3><ul><li><a href="https://tamo.lt">Tamo Dienynas</a></li><li><a href="https://office.com">office365</a></li></ul></div>
+                <div class="category">
+                    <h3>~/util</h3>
+                    <ul>
+                        <li><a href="https://spotidownloader.com">spotidownloader</a></li>
+                        <li><a href="https://virustotal.com">VirusTotal</a></li>
+                        <li><a href="https://proton.me/mail">Proton Mail</a></li>
+                    </ul>
+                </div>
+                <div id="pomodoro" class="pomodoro-container">
+                    <span id="timer-display" class="timer-display" contenteditable="true" spellcheck="false">25:00</span>
+                    <div class="timer-btns">
+                        <button class="timer-btn" onclick="startTimer()">start</button>
+                        <button class="timer-btn" onclick="pauseTimer()">pause</button>
+                        <button class="timer-btn" onclick="resetTimer()">reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="quote-container" class="quote-container"><span id="quote-text"></span></div>
+
+    <script>
+        const searchInput = document.getElementById('search-bar');
+        const notepad = document.getElementById('notepad');
+        const timerDisplay = document.getElementById('timer-display');
+        const images = ["./birddd.png", "./csm.png", "./arima.png", "./sandevistan.png", "./bluebond.png", "./musashi.png", "./vagabond.png", "./vinland.png", "./malenia.png", "./aurafarm.png", "./steamtrain.png", "./csdevil.png", "./infinite.png", "./kurosaki.png", "./touka.png", "./unravel.png", "./giovanna.png", "./silverchariot.png", "./bloom.png", "./slily.png", "./ichigo.png"];
+        const quotes = ["\"I have no enemies.\"", "\"If you want to understand others, you must first understand yourself.\"", "\"Everything in this world is just a game and we are merely the players.\"", "\"A man who cannot wipe away his own tears is not a man.\"", "\"The only way to truly escape the mundane is to keep evolving.\""];
+
+        let currentImgIdx = parseInt(localStorage.getItem('last-img-idx')) || 0;
+        let autoCycle = localStorage.getItem('auto-cycle') !== 'off';
+        let randomStartup = localStorage.getItem('random-startup') !== 'off';
+        let timerInterval, isRunning = false;
+        let defaultTime = parseInt(localStorage.getItem('timer-custom-val')) || 1500;
+        let timeLeft = defaultTime;
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerHTML = `${now.toLocaleTimeString([], { hour12: false })} | ${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
+            const hrs = now.getHours();
+            document.getElementById('greeting').innerText = hrs < 12 ? "Good morning." : hrs < 18 ? "Good afternoon." : hrs < 22 ? "Good evening." : "Late night.";
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        function handleSearch(e) {
+            e.preventDefault();
+            let q = searchInput.value.trim();
+            if (!q) return;
+            if (q.startsWith('y!')) window.location.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(q.split('!')[1])}`;
+            else window.location.href = q.includes('.') ? (q.startsWith('http') ? q : `https://${q}`) : `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+        }
+
+        const menus = ['theme-menu', 'gallery-menu', 'settings-menu', 'notes-window'];
+        function closeAll() { menus.forEach(m => document.getElementById(m).classList.remove('open')); }
+
+        document.getElementById('notes-trigger').onclick = (e) => { e.stopPropagation(); const o = document.getElementById('notes-window').classList.contains('open'); closeAll(); if(!o) document.getElementById('notes-window').classList.add('open'); };
+        document.getElementById('theme-trigger').onclick = (e) => { e.stopPropagation(); const o = document.getElementById('theme-menu').classList.contains('open'); closeAll(); if(!o) document.getElementById('theme-menu').classList.add('open'); };
+        document.getElementById('gallery-trigger').onclick = (e) => { e.stopPropagation(); const o = document.getElementById('gallery-menu').classList.contains('open'); closeAll(); if(!o) document.getElementById('gallery-menu').classList.add('open'); };
+        document.getElementById('settings-trigger').onclick = (e) => { e.stopPropagation(); const o = document.getElementById('settings-menu').classList.contains('open'); closeAll(); if(!o) document.getElementById('settings-menu').classList.add('open'); };
+
+        function setTheme(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('preferred-theme', t); closeAll(); }
+        
+        function toggleFeature(feat, e) {
+            e.stopPropagation();
+            let state = localStorage.getItem(feat + '-enabled') === 'on' ? 'off' : 'on';
+            localStorage.setItem(feat + '-enabled', state);
+            applyFeatures();
+        }
+
+        function applyFeatures() {
+            const notesOn = localStorage.getItem('notes-enabled') !== 'off';
+            const timerOn = localStorage.getItem('timer-enabled') === 'on';
+            const quoteOn = localStorage.getItem('quote-enabled') === 'on';
+            document.getElementById('notes-btn-container').style.display = notesOn ? 'block' : 'none';
+            document.getElementById('pomodoro').style.display = timerOn ? 'block' : 'none';
+            document.getElementById('quote-container').style.display = quoteOn ? 'block' : 'none';
+            document.getElementById('notes-toggle').innerText = `feature: notes ${notesOn ? 'on' : 'off'}`;
+            document.getElementById('timer-toggle').innerText = `feature: timer ${timerOn ? 'on' : 'off'}`;
+            document.getElementById('quote-toggle').innerText = `feature: quote ${quoteOn ? 'on' : 'off'}`;
+        }
+
+        function toggleAutoCycle(e) { e.stopPropagation(); autoCycle = !autoCycle; localStorage.setItem('auto-cycle', autoCycle ? 'on' : 'off'); document.getElementById('auto-cycle-toggle').innerText = `auto-cycle: ${autoCycle ? 'on' : 'off'}`; }
+        function toggleRandomStartup(e) { e.stopPropagation(); randomStartup = !randomStartup; localStorage.setItem('random-startup', randomStartup ? 'on' : 'off'); document.getElementById('random-startup-toggle').innerText = `random on startup: ${randomStartup ? 'on' : 'off'}`; }
+
+        function startTimer() { if (isRunning) return; isRunning = true; timerInterval = setInterval(() => { timeLeft--; updateTimerDisplay(); if (timeLeft <= 0) { clearInterval(timerInterval); alert("Time's up!"); resetTimer(); } }, 1000); }
+        function pauseTimer() { clearInterval(timerInterval); isRunning = false; }
+        function resetTimer() { pauseTimer(); timeLeft = defaultTime; updateTimerDisplay(); }
+        function updateTimerDisplay() { let m = Math.floor(timeLeft / 60), s = timeLeft % 60; timerDisplay.innerText = `${m}:${s < 10 ? '0' : ''}${s}`; }
+
+        timerDisplay.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                let val = parseInt(timerDisplay.innerText);
+                if (!isNaN(val) && val > 0) { defaultTime = val * 60; localStorage.setItem('timer-custom-val', defaultTime); resetTimer(); }
+                timerDisplay.blur();
+            }
+        });
+
+        function setImg(idx, instant = false) { currentImgIdx = idx; localStorage.setItem('last-img-idx', idx); const s = document.getElementById("slideshow"); if (instant) s.src = images[idx]; else { s.style.opacity = 0; setTimeout(() => { s.src = images[idx]; s.style.opacity = 1; }, 400); } }
+
+        notepad.oninput = () => localStorage.setItem('startpage-notes', notepad.value);
+
+        window.onload = () => {
+            setTheme(localStorage.getItem('preferred-theme') || 'default');
+            applyFeatures();
+            document.getElementById('quote-text').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+            document.getElementById('auto-cycle-toggle').innerText = `auto-cycle: ${autoCycle ? 'on' : 'off'}`;
+            document.getElementById('random-startup-toggle').innerText = `random on startup: ${randomStartup ? 'on' : 'off'}`;
+            notepad.value = localStorage.getItem('startpage-notes') || "";
+            const l = document.getElementById('gallery-list');
+            images.forEach((img, i) => { const li = document.createElement('li'); li.innerText = img.split('/').pop().split('.')[0]; li.onclick = (e) => { e.stopPropagation(); setImg(i); closeAll(); }; l.appendChild(li); });
+            setImg(randomStartup ? Math.floor(Math.random() * images.length) : currentImgIdx, true);
+            updateTimerDisplay();
+            searchInput.focus();
+        };
+
+        window.onclick = () => closeAll();
+        window.onkeydown = (e) => { 
+            if(e.key === 'Escape') {
+                closeAll();
+                searchInput.value = "";
+                searchInput.focus();
+            }
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                let nextIdx = (currentImgIdx + 1) % images.length;
+                setImg(nextIdx);
+            }
+            if (document.activeElement !== searchInput && document.activeElement !== notepad && document.activeElement !== timerDisplay && e.key.length === 1 && !e.ctrlKey) {
+                searchInput.focus(); 
+            }
+        };
+    </script>
+</body>
+</html>
